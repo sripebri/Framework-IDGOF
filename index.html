@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IGDOF-GH — Visualisasi 3D Sistem Hidrogen Hijau</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;}
+body{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:#060e1a;
+  color:#e2eaf5;
+}
+
+/* ── CANVAS ── */
+#threeCanvas{
+  position:fixed;inset:0;
+  width:100%;height:100%;
+  display:block;
+  cursor:grab;
+}
+#threeCanvas:active{cursor:grabbing;}
+
+/* ── TOP BAR ── */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(6,14,26,0.88);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(255,255,255,0.07);
+  padding:0 28px;
+  display:flex;align-items:center;justify-content:space-between;
+  height:58px;
+}
+.tb-logo{
+  display:flex;align-items:center;gap:10px;
+}
+.tb-mark{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,#ff6b2b,#ff3d00);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+  box-shadow:0 4px 12px rgba(255,107,43,0.4);
+}
+.tb-name{
+  font-size:15px;font-weight:800;color:#fff;letter-spacing:-0.3px;
+}
+.tb-sub{font-size:10px;color:rgba(255,255,255,0.38);display:block;font-weight:400;}
+.tb-stats{
+  display:flex;gap:24px;
+}
+.tb-stat{}
+.tb-val{
+  font-family:'JetBrains Mono',monospace;
+  font-size:14px;font-weight:500;
+  color:#1de9b6;line-height:1;
+}
+.tb-lbl{font-size:9px;color:rgba(255,255,255,0.3);margin-top:2px;text-transform:uppercase;letter-spacing:1px;}
+.tb-hint{
+  font-size:11px;color:rgba(255,255,255,0.25);
+  font-family:'JetBrains Mono',monospace;
+}
+
+/* ── STEP TABS ── */
+.steptabs{
+  position:fixed;top:58px;left:0;right:0;z-index:100;
+  background:rgba(6,14,26,0.82);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  display:flex;overflow-x:auto;scrollbar-width:none;
+}
+.steptabs::-webkit-scrollbar{display:none;}
+.stab{
+  flex:1;min-width:120px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:10px 12px;
+  border-bottom:2px solid transparent;
+  cursor:pointer;transition:all 0.2s;
+  border-top:none;border-left:none;border-right:none;
+  background:none;
+  gap:4px;
+}
+.stab:hover{background:rgba(255,255,255,0.04);}
+.stab.on{border-bottom-color:var(--c);}
+.stab-icon{font-size:18px;}
+.stab-lbl{
+  font-size:10px;font-weight:600;color:rgba(255,255,255,0.4);
+  letter-spacing:0.5px;white-space:nowrap;
+}
+.stab.on .stab-lbl{color:var(--c);}
+.stab-bar{
+  height:2px;width:24px;border-radius:2px;
+  background:var(--c);opacity:0;transition:opacity 0.2s;
+}
+.stab.on .stab-bar{opacity:1;}
+
+/* ── INFO CARD (bottom) ── */
+.infocard{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:rgba(6,14,26,0.92);
+  backdrop-filter:blur(16px);
+  border-top:1px solid rgba(255,255,255,0.07);
+  display:grid;grid-template-columns:auto 1fr auto;
+  gap:0;
+}
+.ic-step{
+  padding:16px 24px;
+  border-right:1px solid rgba(255,255,255,0.06);
+  display:flex;flex-direction:column;justify-content:center;
+  min-width:180px;
+}
+.ic-step-num{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;color:rgba(255,255,255,0.3);
+  letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;
+}
+.ic-step-title{
+  font-size:18px;font-weight:800;color:#fff;line-height:1.15;
+  letter-spacing:-0.3px;
+}
+.ic-step-sub{
+  font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;
+}
+.ic-body{
+  padding:14px 24px;display:flex;flex-direction:column;justify-content:center;
+}
+.ic-desc{
+  font-size:12px;line-height:1.75;color:rgba(226,234,245,0.78);
+  max-width:680px;
+}
+.ic-reaction{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:#1de9b6;line-height:1.9;
+  margin-top:6px;display:none;
+  background:rgba(29,233,182,0.05);
+  border-left:2px solid rgba(29,233,182,0.4);
+  padding:6px 10px;border-radius:4px;
+}
+.ic-metrics{
+  padding:12px 20px;
+  border-left:1px solid rgba(255,255,255,0.06);
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  min-width:260px;align-content:center;
+}
+.ic-m{
+  background:rgba(255,255,255,0.04);
+  border-radius:7px;padding:8px 10px;
+}
+.ic-m-val{
+  font-family:'JetBrains Mono',monospace;
+  font-size:13px;font-weight:500;line-height:1;
+  color:#1de9b6;
+}
+.ic-m-lbl{font-size:9px;color:rgba(255,255,255,0.3);margin-top:3px;text-transform:uppercase;letter-spacing:0.8px;}
+
+/* ── LEGEND (left side) ── */
+.legend{
+  position:fixed;left:20px;bottom:170px;z-index:99;
+  background:rgba(6,14,26,0.8);
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:10px;padding:12px 14px;
+}
+.leg-item{
+  display:flex;align-items:center;gap:8px;
+  font-size:10px;color:rgba(255,255,255,0.5);
+  padding:3px 0;
+}
+.leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+
+/* ── TOOLTIP ── */
+.tooltip{
+  position:fixed;z-index:200;
+  background:rgba(6,14,26,0.95);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:8px;padding:8px 12px;
+  font-size:11px;color:#e2eaf5;
+  pointer-events:none;opacity:0;
+  transition:opacity 0.15s;
+  backdrop-filter:blur(8px);
+  max-width:200px;
+  line-height:1.5;
+}
+.tooltip.show{opacity:1;}
+
+@media(max-width:700px){
+  .tb-stats{display:none;}
+  .ic-metrics{display:none;}
+  .ic-step{min-width:140px;}
+  .legend{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="tb-logo">
+    <div class="tb-mark">🌋</div>
+    <div>
+      <div class="tb-name">IGDOF-GH</div>
+      <span class="tb-sub">Sistem Hidrogen Hijau Berbasis Panas Bumi</span>
+    </div>
+  </div>
+  <div class="tb-stats">
+    <div class="tb-stat">
+      <div class="tb-val">~444 ton/thn</div>
+      <div class="tb-lbl">Produksi H₂</div>
+    </div>
+    <div class="tb-stat">
+      <div class="tb-val">USD 6,52/kg</div>
+      <div class="tb-lbl">LCOH AWE</div>
+    </div>
+    <div class="tb-stat">
+      <div class="tb-val">~90%</div>
+      <div class="tb-lbl">Kapasitas Faktor</div>
+    </div>
+    <div class="tb-stat">
+      <div class="tb-val">23 GW</div>
+      <div class="tb-lbl">Potensi Indonesia</div>
+    </div>
+  </div>
+  <div class="tb-hint">Seret · Scroll · Klik objek</div>
+</div>
+
+<!-- STEP TABS -->
+<div class="steptabs" id="steptabs">
+  <button class="stab on" style="--c:#ff6b2b" data-s="0" onclick="setStep(0)">
+    <span class="stab-icon">🌋</span>
+    <span class="stab-lbl">Panas Bumi</span>
+    <span class="stab-bar"></span>
+  </button>
+  <button class="stab" style="--c:#3b9aff" data-s="1" onclick="setStep(1)">
+    <span class="stab-icon">⚡</span>
+    <span class="stab-lbl">Pembangkitan</span>
+    <span class="stab-bar"></span>
+  </button>
+  <button class="stab" style="--c:#1de9b6" data-s="2" onclick="setStep(2)">
+    <span class="stab-icon">⚗️</span>
+    <span class="stab-lbl">Elektrolisis AWE</span>
+    <span class="stab-bar"></span>
+  </button>
+  <button class="stab" style="--c:#7fff7f" data-s="3" onclick="setStep(3)">
+    <span class="stab-icon">🟢</span>
+    <span class="stab-lbl">H₂ Hijau</span>
+    <span class="stab-bar"></span>
+  </button>
+  <button class="stab" style="--c:#f6c928" data-s="4" onclick="setStep(4)">
+    <span class="stab-icon">♻️</span>
+    <span class="stab-lbl">Kaskade</span>
+    <span class="stab-bar"></span>
+  </button>
+</div>
+
+<!-- CANVAS -->
+<canvas id="threeCanvas"></canvas>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="leg-item"><div class="leg-dot" style="background:#ff6b2b"></div>Fluida panas bumi</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#3b9aff"></div>Listrik baseload</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#1de9b6"></div>Hidrogen hijau H₂</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#f6c928"></div>Panas sisa agro</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#c96bff"></div>Ko-produk mineral</div>
+</div>
+
+<!-- INFO CARD -->
+<div class="infocard">
+  <div class="ic-step">
+    <div class="ic-step-num" id="icNum">TAHAP 01 / 05</div>
+    <div class="ic-step-title" id="icTitle">Fluida Panas Bumi</div>
+    <div class="ic-step-sub" id="icSub">Sumber Energi Primer</div>
+  </div>
+  <div class="ic-body">
+    <div class="ic-desc" id="icDesc">
+      Fluida panas bumi dipompakan dari reservoir vulkanik sedalam 1.500–3.000 m pada suhu 150–250°C. Kapasitas faktor ~90% menjadikan panas bumi jauh lebih stabil dibanding energi surya atau angin yang bersifat intermiten. Indonesia memiliki potensi 23 GW—terbesar kedua di dunia.
+    </div>
+    <div class="ic-reaction" id="icReaction">
+      Katoda: 4H₂O + 4e⁻ → 2H₂↑ + 4OH⁻
+      Anoda:  4OH⁻ → O₂↑ + 2H₂O + 4e⁻
+      ─────────────────────────────────
+      Total: 2H₂O + listrik → 2H₂ + O₂
+    </div>
+  </div>
+  <div class="ic-metrics" id="icMetrics">
+    <div class="ic-m"><div class="ic-m-val" style="color:#ff9a6b">150–250°C</div><div class="ic-m-lbl">Suhu Fluida</div></div>
+    <div class="ic-m"><div class="ic-m-val" style="color:#ff9a6b">1.500–3.000 m</div><div class="ic-m-lbl">Kedalaman Sumur</div></div>
+    <div class="ic-m"><div class="ic-m-val" style="color:#ff9a6b">~90%</div><div class="ic-m-lbl">Kapasitas Faktor</div></div>
+    <div class="ic-m"><div class="ic-m-val" style="color:#ff9a6b">23 GW</div><div class="ic-m-lbl">Potensi Nasional</div></div>
+  </div>
+</div>
+
+<!-- TOOLTIP -->
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   STEP DATA
+════════════════════════════════════════════════════════════ */
+const STEPS = [
+  {
+    num:'TAHAP 01 / 05', title:'Fluida Panas Bumi', sub:'Sumber Energi Primer',
+    desc:'Fluida panas bumi dipompakan dari reservoir vulkanik sedalam 1.500–3.000 m pada suhu 150–250°C. Kapasitas faktor ~90% menjadikan panas bumi jauh lebih stabil dibanding energi surya atau angin. Indonesia menyimpan potensi 23 GW—terbesar kedua di dunia—namun baru ~10% yang dikembangkan.',
+    metrics:[['150–250°C','Suhu Fluida','#ff9a6b'],['1.500–3.000 m','Kedalaman','#ff9a6b'],['~90%','Kapasitas Faktor','#ff9a6b'],['23 GW','Potensi RI','#ff9a6b']],
+    reaction:false, color:'#ff6b2b',
+  },
+  {
+    num:'TAHAP 02 / 05', title:'Pembangkitan Listrik', sub:'Binary / Flash Cycle',
+    desc:'Uap bertekanan menggerakkan turbin dalam siklus flash atau binary untuk menghasilkan listrik baseload yang stabil 24/7. Keunggulan utama panas bumi inilah yang menjadikannya ideal untuk elektrolisis AWE—sistem ini membutuhkan suplai listrik konstan tanpa interupsi.',
+    metrics:[['10 MW','Kapasitas','#7dbfff'],['8.000 jam/thn','Jam Operasi','#7dbfff'],['80.000 MWh','Total Energi/Thn','#7dbfff'],['30%','Alokasi ke AWE','#7dbfff']],
+    reaction:false, color:'#3b9aff',
+  },
+  {
+    num:'TAHAP 03 / 05', title:'Elektrolisis AWE', sub:'Reaksi: 2H₂O → 2H₂ + O₂',
+    desc:'Elektroliser Alkaline (AWE) memisahkan air menjadi H₂ dan O₂ menggunakan listrik dan larutan KOH 20–30%. AWE dipilih karena CAPEX terendah (~USD 500/kW), umur stack terpanjang (80.000 jam), dan performa optimal untuk pasokan baseload stabil yang menjadi karakteristik panas bumi.',
+    metrics:[['~54 kWh/kg','Konsumsi AWE','#6fffd9'],['USD 500/kW','CAPEX AWE','#6fffd9'],['80.000 jam','Umur Stack','#6fffd9'],['+237 kJ/mol','Energi Gibbs ΔG','#6fffd9']],
+    reaction:true, color:'#1de9b6',
+  },
+  {
+    num:'TAHAP 04 / 05', title:'H₂ Hijau — Penyimpanan & Ekspor', sub:'Output Bernilai Tinggi',
+    desc:'Hidrogen hasil elektrolisis dikompres, disimpan dalam tangki bertekanan, lalu siap diekspor ke Jepang, Korea Selatan, dan Uni Eropa yang telah berkomitmen impor H₂ hijau jangka panjang. Dari 10 MW panas bumi, sistem ini menghasilkan ~444 ton H₂/tahun senilai USD 1,8–3,1 juta.',
+    metrics:[['~444 ton/thn','Produksi H₂','#7fff7f'],['USD 4–7/kg','Harga Pasar','#7fff7f'],['14,8 GWh/thn','Energi Kimia H₂','#7fff7f'],['USD 6,52/kg','LCOH Saat Ini','#7fff7f']],
+    reaction:false, color:'#7fff7f',
+  },
+  {
+    num:'TAHAP 05 / 05', title:'Sistem Kaskade Multi-Tingkat', sub:'4 Aliran Pendapatan',
+    desc:'Panas sisa 80–120°C → agro-industri (pengeringan kopi, kopra, ikan). Panas 30–50°C → akuakultur komunitas. Brine → ekstraksi litium & silika. Total empat aliran pendapatan dari satu lapangan sumur—setiap megawatt panas bumi bernilai jauh lebih tinggi dari sekadar listrik.',
+    metrics:[['80–120°C','Panas → Agro','#ffe07a'],['30–50°C','Panas → Akuakultur','#ffe07a'],['Li + SiO₂','Ko-produk Brine','#e0aaff'],['4 stream','Aliran Pendapatan','#ffe07a']],
+    reaction:false, color:'#f6c928',
+  },
+];
+
+let activeStep = 0;
+
+function setStep(n) {
+  activeStep = n;
+  const S = STEPS[n];
+  document.querySelectorAll('.stab').forEach((t,i) => t.classList.toggle('on', i===n));
+  document.getElementById('icNum').textContent = S.num;
+  document.getElementById('icTitle').textContent = S.title;
+  document.getElementById('icSub').textContent = S.sub;
+  document.getElementById('icDesc').textContent = S.desc;
+  document.getElementById('icReaction').style.display = S.reaction ? 'block' : 'none';
+  document.getElementById('icMetrics').innerHTML = S.metrics.map(([v,l,c]) =>
+    `<div class="ic-m"><div class="ic-m-val" style="color:${c}">${v}</div><div class="ic-m-lbl">${l}</div></div>`
+  ).join('');
+  // highlight in 3D
+  updateHighlight(n);
+}
+
+/* ════════════════════════════════════════════════════════════
+   THREE.JS SETUP
+════════════════════════════════════════════════════════════ */
+const canvas = document.getElementById('threeCanvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+renderer.outputEncoding = THREE.sRGBEncoding;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x060e1a);
+scene.fog = new THREE.FogExp2(0x060e1a, 0.008);
+
+// Camera
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
+camera.position.set(0, 18, 32);
+camera.lookAt(0, 0, 0);
+
+// Lights
+const ambient = new THREE.AmbientLight(0x223355, 0.8);
+scene.add(ambient);
+const sun = new THREE.DirectionalLight(0xffffff, 1.2);
+sun.position.set(20, 30, 15);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.near = 0.1;
+sun.shadow.camera.far = 200;
+sun.shadow.camera.left = -50;
+sun.shadow.camera.right = 50;
+sun.shadow.camera.top = 50;
+sun.shadow.camera.bottom = -50;
+scene.add(sun);
+const fill = new THREE.DirectionalLight(0x4488ff, 0.4);
+fill.position.set(-15, 10, -10);
+scene.add(fill);
+const geo_light = new THREE.PointLight(0xff4400, 3, 20);
+geo_light.position.set(-14, -2, 0);
+scene.add(geo_light);
+const h2_light = new THREE.PointLight(0x1de9b6, 2, 18);
+h2_light.position.set(18, 2, 0);
+scene.add(h2_light);
+
+/* ── GROUND ── */
+const groundGeo = new THREE.PlaneGeometry(120, 80);
+const groundMat = new THREE.MeshStandardMaterial({
+  color: 0x0a1625, roughness: 0.9, metalness: 0.1
+});
+const ground = new THREE.Mesh(groundGeo, groundMat);
+ground.rotation.x = -Math.PI/2;
+ground.position.y = -0.05;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// Grid
+const grid = new THREE.GridHelper(120, 30, 0x0d2040, 0x0d2040);
+grid.position.y = 0;
+scene.add(grid);
+
+/* ── HELPERS ── */
+function makeMat(color, rough=0.45, metal=0.3, emissive=0x000000, emInt=0) {
+  return new THREE.MeshStandardMaterial({
+    color: new THREE.Color(color), roughness: rough, metalness: metal,
+    emissive: new THREE.Color(emissive), emissiveIntensity: emInt
+  });
+}
+function box(w,h,d, mat, px,py,pz) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat);
+  m.position.set(px,py,pz);
+  m.castShadow = true; m.receiveShadow = true;
+  scene.add(m); return m;
+}
+function cyl(rt,rb,h,seg, mat, px,py,pz) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg), mat);
+  m.position.set(px,py,pz);
+  m.castShadow = true; m.receiveShadow = true;
+  scene.add(m); return m;
+}
+function sphere(r,seg, mat, px,py,pz) {
+  const m = new THREE.Mesh(new THREE.SphereGeometry(r,seg,seg), mat);
+  m.position.set(px,py,pz);
+  m.castShadow = true; m.receiveShadow = true;
+  scene.add(m); return m;
+}
+function tube(points, radius, col) {
+  const curve = new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)));
+  const geo = new THREE.TubeGeometry(curve, 24, radius, 8, false);
+  const mat = new THREE.MeshStandardMaterial({color:new THREE.Color(col), roughness:0.5, metalness:0.4});
+  const m = new THREE.Mesh(geo, mat);
+  scene.add(m); return m;
+}
+
+/* ════════════════════════════════════════════════════════════
+   BUILD SCENE — Objects spread left-to-right along X axis
+   Layout:
+     -14  : Wellhead + underground
+     -5   : Power plant
+      5   : AWE electrolyzer
+      14  : H2 storage tanks
+   Cascade (agro/aqua/mineral) → Z axis spread
+════════════════════════════════════════════════════════════ */
+
+const objects = {}; // named groups for highlighting
+
+/* ── 1. UNDERGROUND / RESERVOIR ── */
+const uGeo = new THREE.CylinderGeometry(2.5, 3.5, 5, 16);
+const uMat = makeMat(0xff3300, 0.8, 0.0, 0xff2200, 1.2);
+const reservoir = new THREE.Mesh(uGeo, uMat);
+reservoir.position.set(-14, -5.5, 0);
+reservoir.castShadow = true;
+scene.add(reservoir);
+objects.reservoir = reservoir;
+
+// Glow sphere around reservoir
+const glowMat = new THREE.MeshBasicMaterial({
+  color: 0xff4400, transparent: true, opacity: 0.12
+});
+const glowSphere = new THREE.Mesh(new THREE.SphereGeometry(4.5,16,16), glowMat);
+glowSphere.position.copy(reservoir.position);
+scene.add(glowSphere);
+
+// Borehole (vertical pipe)
+const boreGrp = new THREE.Group();
+const borePipe = cyl(0.22,0.22,8, 8, makeMat(0x8b5e2a,0.7,0.3), -14,1,0);
+objects.borehole = borePipe;
+
+// Wellhead platform
+const wplatform = box(3,0.4,3, makeMat(0x3a3a4a,0.6,0.5), -14,0.2,0);
+// Wellhead box
+const whead = box(1.2,1.0,1.2, makeMat(0x555566,0.5,0.6), -14,0.9,0);
+// Derrick legs
+for(let a of [-0.7,0.7]) {
+  const leg = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.06,0.1,4,6),
+    makeMat(0x888899,0.6,0.5)
+  );
+  leg.position.set(-14+a*0.5, 2.5, a*0.5);
+  leg.rotation.z = a * 0.18;
+  leg.castShadow=true;
+  scene.add(leg);
+}
+const derrickTop = new THREE.Mesh(new THREE.ConeGeometry(0.3,0.8,6), makeMat(0x999aaa,0.6,0.5));
+derrickTop.position.set(-14,4.8,0);
+derrickTop.castShadow=true;
+scene.add(derrickTop);
+
+/* ── 2. POWER PLANT ── */
+const ppGrp = new THREE.Group();
+scene.add(ppGrp);
+// Main building
+const ppBody = box(5,4,4, makeMat(0x1a3a5c,0.6,0.3), -5,2,0);
+// Turbine hall (wider, lower)
+const ppHall = box(3,2.5,5, makeMat(0x1e4570,0.65,0.25), -5.5,1.25,-4.5);
+// Chimney
+const chimney = cyl(0.4,0.5,5, 8, makeMat(0x3a3a4c,0.7,0.2), -3.5,4.5,0);
+// Chimney cap with steam glow
+const steamGlow = new THREE.Mesh(new THREE.SphereGeometry(0.6,8,8),
+  new THREE.MeshBasicMaterial({color:0x88aacc,transparent:true,opacity:0.22}));
+steamGlow.position.set(-3.5,7.3,0);
+scene.add(steamGlow);
+// Turbine dome
+const turbDome = new THREE.Mesh(new THREE.CylinderGeometry(0.9,1,0.7,16),makeMat(0x2a5080,0.5,0.4));
+turbDome.position.set(-6,4.35,0); turbDome.castShadow=true; scene.add(turbDome);
+objects.powerplant = ppBody;
+
+/* ── 3. AWE ELECTROLYZER ── */
+// Main housing
+const aweBody = box(5,4.5,4, makeMat(0x0d3d25,0.5,0.3), 5,2.25,0);
+// Three cell stacks inside (visible on sides)
+for(let i=0;i<3;i++){
+  const stack = box(0.9,3.5,0.6, makeMat(0x1a6040,0.4,0.4), 3.6+i*1.2,2.25,0);
+}
+// Electrode plates (visible face detail)
+for(let i=0;i<5;i++){
+  const plate = box(4.2,0.06,0.4, makeMat(0x1d9e75,0.3,0.7), 5,0.5+i*0.8,2.1);
+}
+// Front panel
+const awePanelFace = box(5,4.5,0.15, makeMat(0x165a35,0.4,0.5), 5,2.25,2.1);
+// KOH tank
+const kohTank = cyl(0.55,0.55,2.5,12, makeMat(0x334455,0.5,0.5), 7.8,1.25,1.8);
+const kohLabel = cyl(0.56,0.56,0.3,12,
+  new THREE.MeshBasicMaterial({color:0x44aaff}), 7.8,1.6,1.8);
+// Water inlet pipe
+objects.awe = aweBody;
+
+/* ── 4. H2 STORAGE TANKS ── */
+// Two large cylindrical tanks (horizontal)
+const tank1 = new THREE.Mesh(
+  new THREE.CylinderGeometry(1.2,1.2,5,24),
+  makeMat(0x064e3b,0.45,0.5,0x00ff88,0.06)
+);
+tank1.rotation.z = Math.PI/2;
+tank1.position.set(16,1.7,-1);
+tank1.castShadow=true; scene.add(tank1);
+
+const tank2 = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.9,0.9,4,24),
+  makeMat(0x065f46,0.45,0.5,0x00ff88,0.04)
+);
+tank2.rotation.z = Math.PI/2;
+tank2.position.set(16,1.7,2);
+tank2.castShadow=true; scene.add(tank2);
+
+// Tank end caps
+for(let side of [-1,1]) {
+  const cap = new THREE.Mesh(new THREE.SphereGeometry(1.2,16,16),makeMat(0x0a6040,0.45,0.5));
+  cap.scale.set(0.35,1,1);
+  cap.position.set(16+side*2.5, 1.7,-1); cap.castShadow=true; scene.add(cap);
+}
+// Support frames
+for(let x of [14,18]) {
+  const support = box(0.2,3.2,0.2,makeMat(0x555566,0.6,0.6),x,1.6,-1);
+}
+// Compressor unit
+const compressor = box(1.5,1.5,1.5,makeMat(0x334455,0.5,0.5),14.5,0.75,4);
+objects.h2tanks = tank1;
+
+/* ── CASCADE SECTION ── */
+// All on +Z side, spread along Z
+
+// Agro-industrial box (drying facility)
+const agroMain = box(4.5,2.5,3.5, makeMat(0x5c3a0a,0.7,0.1), -5,1.25,-8);
+// Roof
+const agroRoof = new THREE.Mesh(
+  new THREE.ConeGeometry(3.5,1.2,4),
+  makeMat(0x7a4e10,0.8,0.1)
+);
+agroRoof.rotation.y = Math.PI/4;
+agroRoof.position.set(-5,3.1,-8);
+agroRoof.castShadow=true; scene.add(agroRoof);
+// Coffee/copra drying racks
+for(let i=0;i<3;i++){
+  box(0.8,0.08,2.8,makeMat(0x8b6520,0.9,0.1),-6.5+i*0.9,2.6,-8);
+}
+objects.agro = agroMain;
+
+// Aquaculture ponds
+const pond1 = box(3.5,0.6,3, makeMat(0x0e4a6a,0.3,0.1,0x00aaff,0.08), 5,0.3,-8);
+const pondWater = box(3.1,0.15,2.6, new THREE.MeshStandardMaterial({
+  color:0x1a6699,transparent:true,opacity:0.7,roughness:0.1,metalness:0.2
+}), 5,0.68,-8);
+scene.add(pondWater);
+// Fish ripple circles
+for(let i=0;i<3;i++){
+  const ring=new THREE.Mesh(new THREE.RingGeometry(0.1+i*0.18,0.13+i*0.18,16),
+    new THREE.MeshBasicMaterial({color:0x44aadd,side:THREE.DoubleSide,transparent:true,opacity:0.3}));
+  ring.rotation.x=-Math.PI/2;
+  ring.position.set(4.2+Math.sin(i*2.1)*0.8, 0.76, -8.2+Math.cos(i*2.1)*0.6);
+  scene.add(ring);
+}
+objects.aqua = pond1;
+
+// Mineral extraction unit (brine processing)
+const mineralBox = box(3,3,3, makeMat(0x3a1a5c,0.5,0.4), -14,1.5,-8);
+// Pipes on it
+for(let i=0;i<4;i++){
+  cyl(0.1,0.1,1.5,6,makeMat(0x555577,0.6,0.5), -13+i*0.7, 3.25,-8);
+}
+// Tanks
+const minTank = cyl(0.7,0.7,2.5,12,makeMat(0x5a2a8a,0.4,0.5),-14.8,1.25,-5.5);
+objects.mineral = mineralBox;
+
+/* ── PIPES / CONNECTIONS ── */
+// 1. Geothermal fluid: reservoir → wellhead → power plant
+tube([[-14,-3,0],[-14,0,0],[-14,0.5,0],[-9.8,2,0],[-7.5,2,0]], 0.22, '#ff4400');
+
+// 2. Steam: wellhead → power plant turbine
+tube([[-14,0.5,0],[-11,2,0],[-7.5,2,0]], 0.18, '#ff6633');
+
+// 3. Electric cable: power plant → AWE
+tube([[-2.5,4,0],[0,4,0],[2.5,4,0]], 0.14, '#3b9aff');
+// Also underground cable
+tube([[-2.5,0.3,0],[0,0.3,0],[2.5,0.3,0]], 0.1, '#1a5acc');
+
+// 4. H2 pipe: AWE → H2 tanks
+tube([[7.5,2,0],[10,2,-1],[13.5,2,-1]], 0.18, '#1de9b6');
+
+// 5. Heat pipe: power plant → agro
+tube([[-5,2,0],[-5,2,-4],[-5,2,-6.3]], 0.15, '#f6c928');
+
+// 6. Heat pipe: power plant → aquaculture
+tube([[-2.5,2,0],[2,2,-4],[2,1,-6.3]], 0.13, '#f6c928');
+
+// 7. Brine pipe: wellhead → mineral extraction
+tube([[-14,0.5,0],[-14,0.5,-4],[-14,0.5,-6.3]], 0.13, '#c96bff');
+
+// 8. Water supply to AWE
+tube([[5,0.5,4],[5,0.5,2.1]], 0.12, '#4488cc');
+
+/* ── FLOW ARROWS (flat indicator planes) ── */
+function flowArrow(from, to, col) {
+  const dir = new THREE.Vector3(...to).sub(new THREE.Vector3(...from)).normalize();
+  const mid = new THREE.Vector3(...from).lerp(new THREE.Vector3(...to), 0.55);
+  const arrowGeo = new THREE.ConeGeometry(0.2, 0.6, 4);
+  const arrowMat = new THREE.MeshBasicMaterial({color:new THREE.Color(col),transparent:true,opacity:0.7});
+  const arrow = new THREE.Mesh(arrowGeo, arrowMat);
+  arrow.position.copy(mid);
+  // orient toward 'to'
+  const up = new THREE.Vector3(0,1,0);
+  const axis = new THREE.Vector3().crossVectors(up, dir).normalize();
+  const angle = Math.acos(up.dot(dir));
+  if(axis.length()>0.001) arrow.quaternion.setFromAxisAngle(axis, angle);
+  scene.add(arrow);
+}
+flowArrow([-14,0.5,0],[-7.5,2,0],'#ff6600');
+flowArrow([-2.5,4,0],[2.5,4,0],'#3b9aff');
+flowArrow([7.5,2,-1],[13.5,2,-1],'#1de9b6');
+flowArrow([-5,2,-3],[-5,2,-5],'#f6c928');
+flowArrow([-14,0.5,-3],[-14,0.5,-5],'#c96bff');
+
+/* ════════════════════════════════════════════════════════════
+   FLOATING LABELS (canvas sprites)
+════════════════════════════════════════════════════════════ */
+function makeLabel(text, subtext, bgColor, textColor) {
+  const w = 256, h = subtext ? 88 : 64;
+  const cv = document.createElement('canvas');
+  cv.width = w; cv.height = h;
+  const cx = cv.getContext('2d');
+
+  // bg
+  cx.fillStyle = bgColor + 'dd';
+  roundRect(cx, 0, 0, w, h, 10);
+  cx.fill();
+  cx.strokeStyle = bgColor;
+  cx.lineWidth = 2;
+  roundRect(cx, 1, 1, w-2, h-2, 9);
+  cx.stroke();
+
+  // main text
+  cx.fillStyle = textColor;
+  cx.font = 'bold 22px Plus Jakarta Sans, sans-serif';
+  cx.textAlign = 'center';
+  cx.fillText(text, w/2, subtext ? 30 : 36);
+
+  // subtext
+  if(subtext) {
+    cx.fillStyle = textColor + 'aa';
+    cx.font = '13px JetBrains Mono, monospace';
+    cx.fillText(subtext, w/2, 60);
+  }
+
+  const tex = new THREE.CanvasTexture(cv);
+  const spriteMat = new THREE.SpriteMaterial({map:tex, transparent:true});
+  const sprite = new THREE.Sprite(spriteMat);
+  sprite.scale.set(4.5, subtext ? 1.55 : 1.1, 1);
+  return sprite;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r);
+  ctx.quadraticCurveTo(x, y, x+r, y);
+}
+
+const labels3d = [
+  { text:'SUMUR PRODUKSI', sub:'Panas bumi 150–250°C', bg:'#ff4400', tc:'#ffffff', pos:[-14, 6.5, 0] },
+  { text:'PEMBANGKIT', sub:'Binary/Flash · 10 MW', bg:'#1a5acc', tc:'#aaddff', pos:[-5, 6.5, 0] },
+  { text:'ELEKTROLISER AWE', sub:'~54 kWh/kg H₂', bg:'#0d5c35', tc:'#6fffd9', pos:[5, 6.5, 0] },
+  { text:'TANGKI H₂ HIJAU', sub:'~444 ton/tahun', bg:'#044a30', tc:'#7fff7f', pos:[16, 5.5, 0] },
+  { text:'AGRO-INDUSTRI', sub:'Kopi · Kopra (80–120°C)', bg:'#4a2c08', tc:'#ffe07a', pos:[-5, 5.5, -8] },
+  { text:'AKUAKULTUR', sub:'Budidaya ikan (30–50°C)', bg:'#0a3a55', tc:'#88ddff', pos:[5, 4.5, -8] },
+  { text:'Ko-produk Mineral', sub:'Litium + Silika (Brine)', bg:'#2a0f4a', tc:'#d4aaff', pos:[-14, 5.5, -8] },
+];
+
+labels3d.forEach(l => {
+  const sprite = makeLabel(l.text, l.sub, l.bg, l.tc);
+  sprite.position.set(...l.pos);
+  scene.add(sprite);
+});
+
+/* ════════════════════════════════════════════════════════════
+   PARTICLES
+════════════════════════════════════════════════════════════ */
+function makeParticleSystem(count, pathPts, color, size) {
+  const positions = new Float32Array(count * 3);
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions,3));
+  const mat = new THREE.PointsMaterial({
+    color: new THREE.Color(color), size, transparent: true, opacity: 0.85,
+    sizeAttenuation: true
+  });
+  const pts = new THREE.Points(geo, mat);
+  scene.add(pts);
+
+  const curve = new THREE.CatmullRomCurve3(pathPts.map(p=>new THREE.Vector3(...p)));
+  const offsets = Array.from({length:count}, ()=>Math.random());
+
+  return { pts, curve, offsets, count };
+}
+
+// Particle paths
+const particleSystems = [
+  // Geothermal fluid
+  makeParticleSystem(20, [[-14,-4,0],[-14,0.5,0],[-9.5,1.5,0],[-7.5,2,0]], '#ff6633', 0.18),
+  // Steam → turbine
+  makeParticleSystem(14, [[-14,0.5,0],[-10,2.5,0],[-7.5,2,0]], '#ffaa66', 0.13),
+  // Electricity
+  makeParticleSystem(16, [[-2.5,4,0],[0,4.2,0],[2.5,4,0]], '#55aaff', 0.14),
+  // H2 output
+  makeParticleSystem(16, [[7.5,2,0],[10,2,-1],[13.5,2,-1]], '#1de9b6', 0.15),
+  // Heat to agro
+  makeParticleSystem(10, [[-5,2,0],[-5,1.5,-4],[-5,1.5,-6.3]], '#f6c928', 0.13),
+  // Heat to aqua
+  makeParticleSystem(9,  [[-2.5,2,0],[2,1.5,-4],[2,1,-6.3]], '#f6c928', 0.11),
+  // Brine
+  makeParticleSystem(9,  [[-14,0.5,0],[-14,0.5,-3.5],[-14,0.5,-5.5]], '#c96bff', 0.12),
+];
+
+let pTick = 0;
+function updateParticles() {
+  const t = pTick * 0.003;
+  particleSystems.forEach((ps, si) => {
+    const pos = ps.pts.geometry.attributes.position;
+    for(let i=0;i<ps.count;i++){
+      const f = (ps.offsets[i] + t * (0.12 + si*0.01)) % 1;
+      const p = ps.curve.getPoint(f);
+      pos.setXYZ(i, p.x, p.y, p.z);
+    }
+    pos.needsUpdate = true;
+  });
+  pTick++;
+}
+
+/* ════════════════════════════════════════════════════════════
+   HIGHLIGHT SYSTEM
+════════════════════════════════════════════════════════════ */
+const stepTargets = {
+  0: { obj: reservoir, light: geo_light, lightCol: 0xff4400, camTarget: new THREE.Vector3(-14, 1, 0) },
+  1: { obj: ppBody,    light: fill,      lightCol: 0x3b9aff, camTarget: new THREE.Vector3(-5, 2, 0) },
+  2: { obj: aweBody,   light: h2_light,  lightCol: 0x1de9b6, camTarget: new THREE.Vector3(5, 2, 0) },
+  3: { obj: tank1,     light: h2_light,  lightCol: 0x1de9b6, camTarget: new THREE.Vector3(16, 2, 0) },
+  4: { obj: agroMain,  light: fill,      lightCol: 0xf6c928, camTarget: new THREE.Vector3(0, 2, -8) },
+};
+
+const targetCamPos = new THREE.Vector3(0, 18, 32);
+const targetLookAt = new THREE.Vector3(0, 0, 0);
+let lerpCam = false;
+
+function updateHighlight(n) {
+  // Pulse highlight — set emissive glow on target
+  const allObjs = [reservoir, ppBody, aweBody, tank1, agroMain, pond1, mineralBox];
+  allObjs.forEach(o => {
+    if(o.material) { o.material.emissiveIntensity = 0; }
+  });
+  const tgt = stepTargets[n];
+  if(tgt && tgt.obj && tgt.obj.material) {
+    tgt.obj.material.emissive = new THREE.Color(STEPS[n].color);
+    tgt.obj.material.emissiveIntensity = 0.4;
+  }
+  // Fly camera toward target
+  if(tgt) {
+    const ct = tgt.camTarget;
+    targetCamPos.set(ct.x, ct.y+12, ct.z+18);
+    targetLookAt.copy(ct);
+    lerpCam = true;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   ORBIT CONTROLS (manual)
+════════════════════════════════════════════════════════════ */
+let isDrag = false, prevMouse = {x:0,y:0};
+let spherical = { theta: 0.3, phi: 1.1, radius: 32 };
+const lookAtTarget = new THREE.Vector3(0,2,0);
+const camSmooth = new THREE.Vector3();
+camSmooth.copy(camera.position);
+
+canvas.addEventListener('mousedown', e => { isDrag=true; prevMouse={x:e.clientX,y:e.clientY}; lerpCam=false; });
+window.addEventListener('mouseup', () => isDrag=false);
+window.addEventListener('mousemove', e => {
+  if(!isDrag) return;
+  const dx = (e.clientX-prevMouse.x)*0.008;
+  const dy = (e.clientY-prevMouse.y)*0.006;
+  spherical.theta -= dx;
+  spherical.phi = Math.max(0.25, Math.min(1.5, spherical.phi+dy));
+  prevMouse={x:e.clientX,y:e.clientY};
+});
+canvas.addEventListener('wheel', e=>{
+  spherical.radius = Math.max(12, Math.min(70, spherical.radius+e.deltaY*0.04));
+}, {passive:true});
+// Touch
+let prevTouch = null;
+canvas.addEventListener('touchstart', e=>{isDrag=true;prevTouch={x:e.touches[0].clientX,y:e.touches[0].clientY};},{passive:true});
+window.addEventListener('touchend',()=>isDrag=false);
+window.addEventListener('touchmove',e=>{
+  if(!isDrag||!prevTouch)return;
+  const dx=(e.touches[0].clientX-prevTouch.x)*0.008;
+  const dy=(e.touches[0].clientY-prevTouch.y)*0.006;
+  spherical.theta-=dx; spherical.phi=Math.max(0.25,Math.min(1.5,spherical.phi+dy));
+  prevTouch={x:e.touches[0].clientX,y:e.touches[0].clientY};
+},{passive:true});
+
+/* ════════════════════════════════════════════════════════════
+   RAYCASTER / TOOLTIP
+════════════════════════════════════════════════════════════ */
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+const tooltip = document.getElementById('tooltip');
+
+const hoverData = new Map([
+  [reservoir, {title:'Reservoir Vulkanik', info:'Suhu 150–250°C · Kedalaman 1.500–3.000 m · Cadangan energi termal'}],
+  [borePipe,  {title:'Sumur Produksi', info:'Pompa mengalirkan fluida panas ke permukaan · Kapasitas ~90%'}],
+  [ppBody,    {title:'Pembangkit Listrik', info:'Binary/Flash Cycle · Output baseload stabil 24/7 · 10 MW'}],
+  [aweBody,   {title:'Elektroliser AWE', info:'2H₂O → 2H₂ + O₂ · 54 kWh/kg H₂ · CAPEX ~USD 500/kW'}],
+  [tank1,     {title:'Tangki H₂ Hijau', info:'~444 ton/tahun · USD 1,8–3,1 juta/tahun · Ekspor JP/KR/EU'}],
+  [tank2,     {title:'Tangki H₂ Hijau #2', info:'Penyimpanan bertekanan tinggi · Standar ISO 15869'}],
+  [agroMain,  {title:'Agro-Industri', info:'Pengeringan kopi, kopra, ikan · Panas sisa 80–120°C'}],
+  [pond1,     {title:'Kolam Akuakultur', info:'Budidaya ikan air hangat · Panas sisa 30–50°C'}],
+  [mineralBox,{title:'Ekstraksi Mineral', info:'Litium + Silika dari brine · Aliran pendapatan ke-4'}],
+]);
+
+window.addEventListener('mousemove', e => {
+  mouse.x = (e.clientX / window.innerWidth)*2-1;
+  mouse.y = -((e.clientY / window.innerHeight)*2-1);
+
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects([...hoverData.keys()]);
+  if(hits.length > 0) {
+    const d = hoverData.get(hits[0].object);
+    if(d) {
+      tooltip.innerHTML = `<strong>${d.title}</strong><br>${d.info}`;
+      tooltip.style.left = (e.clientX+14)+'px';
+      tooltip.style.top = (e.clientY-10)+'px';
+      tooltip.classList.add('show');
+      canvas.style.cursor='pointer';
+    }
+  } else {
+    tooltip.classList.remove('show');
+    canvas.style.cursor = isDrag?'grabbing':'grab';
+  }
+});
+
+window.addEventListener('click', e => {
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects([...hoverData.keys()]);
+  if(hits.length>0){
+    const obj=hits[0].object;
+    if(obj===reservoir||obj===borePipe) setStep(0);
+    else if(obj===ppBody) setStep(1);
+    else if(obj===aweBody) setStep(2);
+    else if(obj===tank1||obj===tank2) setStep(3);
+    else if(obj===agroMain||obj===pond1||obj===mineralBox) setStep(4);
+  }
+});
+
+/* ════════════════════════════════════════════════════════════
+   ANIMATE ELEMENTS
+════════════════════════════════════════════════════════════ */
+let animTick = 0;
+function animateElements() {
+  const t = animTick * 0.016;
+  // Reservoir glow pulse
+  glowSphere.material.opacity = 0.08 + Math.sin(t*2.5)*0.06;
+  glowSphere.scale.setScalar(1 + Math.sin(t*1.8)*0.06);
+  // Geo light pulse
+  geo_light.intensity = 2.5 + Math.sin(t*3)*1;
+  // Steam glow
+  steamGlow.material.opacity = 0.15 + Math.sin(t*2)*0.1;
+  steamGlow.position.y = 7.3 + Math.sin(t*1.5)*0.2;
+  // H2 light pulse
+  h2_light.intensity = 1.5 + Math.sin(t*2.2)*0.8;
+  // Active step emissive pulse
+  const tgt = stepTargets[activeStep];
+  if(tgt && tgt.obj && tgt.obj.material && tgt.obj.material.emissiveIntensity > 0) {
+    tgt.obj.material.emissiveIntensity = 0.35 + Math.sin(t*3)*0.15;
+  }
+  animTick++;
+}
+
+/* ════════════════════════════════════════════════════════════
+   RESIZE
+════════════════════════════════════════════════════════════ */
+function onResize() {
+  const w = window.innerWidth, h = window.innerHeight;
+  camera.aspect = w/h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+}
+window.addEventListener('resize', onResize);
+onResize();
+
+/* ════════════════════════════════════════════════════════════
+   RENDER LOOP
+════════════════════════════════════════════════════════════ */
+function animate() {
+  requestAnimationFrame(animate);
+
+  // Orbit camera from spherical coords
+  const sp = spherical;
+  const tx = sp.radius * Math.sin(sp.phi) * Math.sin(sp.theta);
+  const ty = sp.radius * Math.cos(sp.phi);
+  const tz = sp.radius * Math.sin(sp.phi) * Math.cos(sp.theta);
+
+  if(lerpCam) {
+    // Smooth fly to step target
+    camSmooth.lerp(targetCamPos, 0.04);
+    lookAtTarget.lerp(targetLookAt, 0.04);
+    // Also update spherical from current
+    const offset = camSmooth.clone().sub(lookAtTarget);
+    sp.radius += (offset.length() - sp.radius) * 0.04;
+  } else {
+    camSmooth.set(lookAtTarget.x+tx, lookAtTarget.y+ty, lookAtTarget.z+tz);
+  }
+
+  camera.position.copy(camSmooth);
+  camera.lookAt(lookAtTarget);
+
+  updateParticles();
+  animateElements();
+  renderer.render(scene, camera);
+}
+
+animate();
+updateHighlight(0);
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if(e.key==='ArrowRight') setStep(Math.min(4,activeStep+1));
+  if(e.key==='ArrowLeft')  setStep(Math.max(0,activeStep-1));
+});
+</script>
+</body>
+</html>
