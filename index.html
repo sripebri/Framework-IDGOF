@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IGDOF-GH — Visualisasi 3D Sistem Hidrogen Hijau</title>
+<title>IGDOF-GH — 3D Visualization of the Green Hydrogen System</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
@@ -200,55 +200,55 @@ body{
     <div class="tb-mark">🌋</div>
     <div>
       <div class="tb-name">IGDOF-GH</div>
-      <span class="tb-sub">Sistem Hidrogen Hijau Berbasis Panas Bumi</span>
+      <span class="tb-sub">Geothermal-Based Green Hydrogen System</span>
     </div>
   </div>
   <div class="tb-stats">
     <div class="tb-stat">
-      <div class="tb-val">~444 ton/thn</div>
-      <div class="tb-lbl">Produksi H₂</div>
+      <div class="tb-val">~444 tons/year</div>
+      <div class="tb-lbl">H₂ Production</div>
     </div>
     <div class="tb-stat">
-      <div class="tb-val">USD 6,52/kg</div>
-      <div class="tb-lbl">LCOH AWE</div>
+      <div class="tb-val">USD 6.52/kg</div>
+      <div class="tb-lbl">AWE LCOH</div>
     </div>
     <div class="tb-stat">
       <div class="tb-val">~90%</div>
-      <div class="tb-lbl">Kapasitas Faktor</div>
+      <div class="tb-lbl">Capacity Factor</div>
     </div>
     <div class="tb-stat">
       <div class="tb-val">23 GW</div>
-      <div class="tb-lbl">Potensi Indonesia</div>
+      <div class="tb-lbl">Indonesia Potential</div>
     </div>
   </div>
-  <div class="tb-hint">Seret · Scroll · Klik objek</div>
+  <div class="tb-hint">Drag · Scroll · Click objects</div>
 </div>
 
 <!-- STEP TABS -->
 <div class="steptabs" id="steptabs">
   <button class="stab on" style="--c:#ff6b2b" data-s="0" onclick="setStep(0)">
     <span class="stab-icon">🌋</span>
-    <span class="stab-lbl">Panas Bumi</span>
+    <span class="stab-lbl">Geothermal</span>
     <span class="stab-bar"></span>
   </button>
   <button class="stab" style="--c:#3b9aff" data-s="1" onclick="setStep(1)">
     <span class="stab-icon">⚡</span>
-    <span class="stab-lbl">Pembangkitan</span>
+    <span class="stab-lbl">Power Generation</span>
     <span class="stab-bar"></span>
   </button>
   <button class="stab" style="--c:#1de9b6" data-s="2" onclick="setStep(2)">
     <span class="stab-icon">⚗️</span>
-    <span class="stab-lbl">Elektrolisis AWE</span>
+    <span class="stab-lbl">AWE Electrolysis</span>
     <span class="stab-bar"></span>
   </button>
   <button class="stab" style="--c:#7fff7f" data-s="3" onclick="setStep(3)">
     <span class="stab-icon">🟢</span>
-    <span class="stab-lbl">H₂ Hijau</span>
+    <span class="stab-lbl">Green H₂</span>
     <span class="stab-bar"></span>
   </button>
   <button class="stab" style="--c:#f6c928" data-s="4" onclick="setStep(4)">
     <span class="stab-icon">♻️</span>
-    <span class="stab-lbl">Kaskade</span>
+    <span class="stab-lbl">Cascade</span>
     <span class="stab-bar"></span>
   </button>
 </div>
@@ -258,39 +258,38 @@ body{
 
 <!-- LEGEND -->
 <div class="legend">
-  <div class="leg-item"><div class="leg-dot" style="background:#ff6b2b"></div>Fluida panas bumi</div>
-  <div class="leg-item"><div class="leg-dot" style="background:#3b9aff"></div>Listrik baseload</div>
-  <div class="leg-item"><div class="leg-dot" style="background:#1de9b6"></div>Hidrogen hijau H₂</div>
-  <div class="leg-item"><div class="leg-dot" style="background:#f6c928"></div>Panas sisa agro</div>
-  <div class="leg-item"><div class="leg-dot" style="background:#c96bff"></div>Ko-produk mineral</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#ff6b2b"></div>Geothermal fluid</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#3b9aff"></div>Baseload electricity</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#1de9b6"></div>Green hydrogen H₂</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#f6c928"></div>Residual heat (agro)</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#c96bff"></div>Mineral co-products</div>
 </div>
 
 <!-- INFO CARD -->
 <div class="infocard">
   <div class="ic-step">
-    <div class="ic-step-num" id="icNum">TAHAP 01 / 05</div>
-    <div class="ic-step-title" id="icTitle">Fluida Panas Bumi</div>
-    <div class="ic-step-sub" id="icSub">Sumber Energi Primer</div>
+    <div class="ic-step-num" id="icNum">STAGE 01 / 05</div>
+    <div class="ic-step-title" id="icTitle">Geothermal Fluid</div>
+    <div class="ic-step-sub" id="icSub">Primary Energy Source</div>
   </div>
   <div class="ic-body">
     <div class="ic-desc" id="icDesc">
-      Fluida panas bumi dipompakan dari reservoir vulkanik sedalam 1.500–3.000 m pada suhu 150–250°C. Kapasitas faktor ~90% menjadikan panas bumi jauh lebih stabil dibanding energi surya atau angin yang bersifat intermiten. Indonesia memiliki potensi 23 GW—terbesar kedua di dunia.
+      Geothermal fluid is pumped from volcanic reservoirs at depths of 1,500–3,000 m with temperatures of 150–250°C. A ~90% capacity factor makes geothermal far more stable than intermittent sources such as solar and wind. Indonesia has a 23 GW potential—the second largest in the world.
     </div>
     <div class="ic-reaction" id="icReaction">
-      Katoda: 4H₂O + 4e⁻ → 2H₂↑ + 4OH⁻
-      Anoda:  4OH⁻ → O₂↑ + 2H₂O + 4e⁻
+      Cathode: 4H₂O + 4e⁻ → 2H₂↑ + 4OH⁻
+      Anode:  4OH⁻ → O₂↑ + 2H₂O + 4e⁻
       ─────────────────────────────────
-      Total: 2H₂O + listrik → 2H₂ + O₂
+      Overall: 2H₂O + electricity → 2H₂ + O₂
     </div>
   </div>
   <div class="ic-metrics" id="icMetrics">
-    <div class="ic-m"><div class="ic-m-val" style="color:#ff9a6b">150–250°C</div><div class="ic-m-lbl">Suhu Fluida</div></div>
-    <div class="ic-m"><div class="ic-m-val" style="color:#ff9a6b">1.500–3.000 m</div><div class="ic-m-lbl">Kedalaman Sumur</div></div>
-    <div class="ic-m"><div class="ic-m-val" style="color:#ff9a6b">~90%</div><div class="ic-m-lbl">Kapasitas Faktor</div></div>
-    <div class="ic-m"><div class="ic-m-val" style="color:#ff9a6b">23 GW</div><div class="ic-m-lbl">Potensi Nasional</div></div>
+    <div class="ic-m"><div class="ic-m-val" style="color:#ff9a6b">150–250°C</div><div class="ic-m-lbl">Fluid Temperature</div></div>
+    <div class="ic-m"><div class="ic-m-val" style="color:#ff9a6b">1,500–3,000 m</div><div class="ic-m-lbl">Well Depth</div></div>
+    <div class="ic-m"><div class="ic-m-val" style="color:#ff9a6b">~90%</div><div class="ic-m-lbl">Capacity Factor</div></div>
+    <div class="ic-m"><div class="ic-m-val" style="color:#ff9a6b">23 GW</div><div class="ic-m-lbl">National Potential</div></div>
   </div>
 </div>
-
 <!-- TOOLTIP -->
 <div class="tooltip" id="tooltip"></div>
 
@@ -300,37 +299,37 @@ body{
 ════════════════════════════════════════════════════════════ */
 const STEPS = [
   {
-    num:'TAHAP 01 / 05', title:'Fluida Panas Bumi', sub:'Sumber Energi Primer',
-    desc:'Fluida panas bumi dipompakan dari reservoir vulkanik sedalam 1.500–3.000 m pada suhu 150–250°C. Kapasitas faktor ~90% menjadikan panas bumi jauh lebih stabil dibanding energi surya atau angin. Indonesia menyimpan potensi 23 GW—terbesar kedua di dunia—namun baru ~10% yang dikembangkan.',
-    metrics:[['150–250°C','Suhu Fluida','#ff9a6b'],['1.500–3.000 m','Kedalaman','#ff9a6b'],['~90%','Kapasitas Faktor','#ff9a6b'],['23 GW','Potensi RI','#ff9a6b']],
+    num:'STAGE 01 / 05', title:'Geothermal Fluid', sub:'Primary Energy Source',
+    desc:'Geothermal fluid is pumped from volcanic reservoirs at depths of 1,500–3,000 m with temperatures of 150–250°C. A ~90% capacity factor makes geothermal far more stable than solar or wind energy. Indonesia holds a 23 GW potential—the second largest in the world—yet only ~10% has been developed.',
+    metrics:[['150–250°C','Fluid Temperature','#ff9a6b'],['1,500–3,000 m','Depth','#ff9a6b'],['~90%','Capacity Factor','#ff9a6b'],['23 GW','Indonesia Potential','#ff9a6b']],
     reaction:false, color:'#ff6b2b',
   },
   {
-    num:'TAHAP 02 / 05', title:'Pembangkitan Listrik', sub:'Binary / Flash Cycle',
-    desc:'Uap bertekanan menggerakkan turbin dalam siklus flash atau binary untuk menghasilkan listrik baseload yang stabil 24/7. Keunggulan utama panas bumi inilah yang menjadikannya ideal untuk elektrolisis AWE—sistem ini membutuhkan suplai listrik konstan tanpa interupsi.',
-    metrics:[['10 MW','Kapasitas','#7dbfff'],['8.000 jam/thn','Jam Operasi','#7dbfff'],['80.000 MWh','Total Energi/Thn','#7dbfff'],['30%','Alokasi ke AWE','#7dbfff']],
+    num:'STAGE 02 / 05', title:'Power Generation', sub:'Binary / Flash Cycle',
+    desc:'Pressurized steam drives turbines in flash or binary cycles to generate stable 24/7 baseload electricity. This is the key advantage of geothermal energy, making it ideal for AWE electrolysis, which requires a constant and uninterrupted power supply.',
+    metrics:[['10 MW','Capacity','#7dbfff'],['8,000 hours/year','Operating Hours','#7dbfff'],['80,000 MWh','Total Energy/Year','#7dbfff'],['30%','Allocation to AWE','#7dbfff']],
     reaction:false, color:'#3b9aff',
   },
   {
-    num:'TAHAP 03 / 05', title:'Elektrolisis AWE', sub:'Reaksi: 2H₂O → 2H₂ + O₂',
-    desc:'Elektroliser Alkaline (AWE) memisahkan air menjadi H₂ dan O₂ menggunakan listrik dan larutan KOH 20–30%. AWE dipilih karena CAPEX terendah (~USD 500/kW), umur stack terpanjang (80.000 jam), dan performa optimal untuk pasokan baseload stabil yang menjadi karakteristik panas bumi.',
-    metrics:[['~54 kWh/kg','Konsumsi AWE','#6fffd9'],['USD 500/kW','CAPEX AWE','#6fffd9'],['80.000 jam','Umur Stack','#6fffd9'],['+237 kJ/mol','Energi Gibbs ΔG','#6fffd9']],
+    num:'STAGE 03 / 05', title:'AWE Electrolysis', sub:'Reaction: 2H₂O → 2H₂ + O₂',
+    desc:'Alkaline Water Electrolysis (AWE) splits water into H₂ and O₂ using electricity and a 20–30% KOH solution. AWE is chosen due to its lowest CAPEX (~USD 500/kW), longest stack lifetime (80,000 hours), and optimal performance under stable baseload supply—characteristic of geothermal energy.',
+    metrics:[['~54 kWh/kg','AWE Consumption','#6fffd9'],['USD 500/kW','AWE CAPEX','#6fffd9'],['80,000 hours','Stack Lifetime','#6fffd9'],['+237 kJ/mol','Gibbs Energy ΔG','#6fffd9']],
     reaction:true, color:'#1de9b6',
   },
   {
-    num:'TAHAP 04 / 05', title:'H₂ Hijau — Penyimpanan & Ekspor', sub:'Output Bernilai Tinggi',
-    desc:'Hidrogen hasil elektrolisis dikompres, disimpan dalam tangki bertekanan, lalu siap diekspor ke Jepang, Korea Selatan, dan Uni Eropa yang telah berkomitmen impor H₂ hijau jangka panjang. Dari 10 MW panas bumi, sistem ini menghasilkan ~444 ton H₂/tahun senilai USD 1,8–3,1 juta.',
-    metrics:[['~444 ton/thn','Produksi H₂','#7fff7f'],['USD 4–7/kg','Harga Pasar','#7fff7f'],['14,8 GWh/thn','Energi Kimia H₂','#7fff7f'],['USD 6,52/kg','LCOH Saat Ini','#7fff7f']],
+    num:'STAGE 04 / 05', title:'Green H₂ — Storage & Export', sub:'High-Value Output',
+    desc:'Hydrogen produced from electrolysis is compressed, stored in pressurized tanks, and exported to Japan, South Korea, and the European Union, which have committed to long-term green hydrogen imports. From a 10 MW geothermal source, this system produces ~444 tons of H₂ per year, valued at USD 1.8–3.1 million.',
+    metrics:[['~444 tons/year','H₂ Production','#7fff7f'],['USD 4–7/kg','Market Price','#7fff7f'],['14.8 GWh/year','H₂ Chemical Energy','#7fff7f'],['USD 6.52/kg','Current LCOH','#7fff7f']],
     reaction:false, color:'#7fff7f',
   },
   {
-    num:'TAHAP 05 / 05', title:'Sistem Kaskade Multi-Tingkat', sub:'4 Aliran Pendapatan',
-    desc:'Panas sisa 80–120°C → agro-industri (pengeringan kopi, kopra, ikan). Panas 30–50°C → akuakultur komunitas. Brine → ekstraksi litium & silika. Total empat aliran pendapatan dari satu lapangan sumur—setiap megawatt panas bumi bernilai jauh lebih tinggi dari sekadar listrik.',
-    metrics:[['80–120°C','Panas → Agro','#ffe07a'],['30–50°C','Panas → Akuakultur','#ffe07a'],['Li + SiO₂','Ko-produk Brine','#e0aaff'],['4 stream','Aliran Pendapatan','#ffe07a']],
+    num:'STAGE 05 / 05', title:'Multi-Level Cascade System', sub:'4 Revenue Streams',
+    desc:'Residual heat at 80–120°C is used for agro-industry (drying coffee, copra, fish). Heat at 30–50°C supports community aquaculture. Brine is utilized for lithium and silica extraction. This creates four revenue streams from a single geothermal field—significantly increasing value beyond electricity alone.',
+    metrics:[['80–120°C','Heat → Agro','#ffe07a'],['30–50°C','Heat → Aquaculture','#ffe07a'],['Li + SiO₂','Brine Co-products','#e0aaff'],['4 streams','Revenue Streams','#ffe07a']],
     reaction:false, color:'#f6c928',
   },
 ];
-
+  
 let activeStep = 0;
 
 function setStep(n) {
@@ -449,10 +448,10 @@ function tube(points, radius, col) {
      -14  : Wellhead + underground
      -5   : Power plant
       5   : AWE electrolyzer
-      14  : H2 storage tanks
-   Cascade (agro/aqua/mineral) → Z axis spread
+      14  : H₂ storage tanks
+   Cascade (agro/aquaculture/minerals) → Z axis spread
 ════════════════════════════════════════════════════════════ */
-
+  
 const objects = {}; // named groups for highlighting
 
 /* ── 1. UNDERGROUND / RESERVOIR ── */
@@ -713,15 +712,15 @@ function roundRect(ctx, x, y, w, h, r) {
 }
 
 const labels3d = [
-  { text:'SUMUR PRODUKSI', sub:'Panas bumi 150–250°C', bg:'#ff4400', tc:'#ffffff', pos:[-14, 6.5, 0] },
-  { text:'PEMBANGKIT', sub:'Binary/Flash · 10 MW', bg:'#1a5acc', tc:'#aaddff', pos:[-5, 6.5, 0] },
-  { text:'ELEKTROLISER AWE', sub:'~54 kWh/kg H₂', bg:'#0d5c35', tc:'#6fffd9', pos:[5, 6.5, 0] },
-  { text:'TANGKI H₂ HIJAU', sub:'~444 ton/tahun', bg:'#044a30', tc:'#7fff7f', pos:[16, 5.5, 0] },
-  { text:'AGRO-INDUSTRI', sub:'Kopi · Kopra (80–120°C)', bg:'#4a2c08', tc:'#ffe07a', pos:[-5, 5.5, -8] },
-  { text:'AKUAKULTUR', sub:'Budidaya ikan (30–50°C)', bg:'#0a3a55', tc:'#88ddff', pos:[5, 4.5, -8] },
-  { text:'Ko-produk Mineral', sub:'Litium + Silika (Brine)', bg:'#2a0f4a', tc:'#d4aaff', pos:[-14, 5.5, -8] },
+  { text:'PRODUCTION WELL', sub:'Geothermal 150–250°C', bg:'#ff4400', tc:'#ffffff', pos:[-14, 6.5, 0] },
+  { text:'POWER PLANT', sub:'Binary/Flash · 10 MW', bg:'#1a5acc', tc:'#aaddff', pos:[-5, 6.5, 0] },
+  { text:'AWE ELECTROLYZER', sub:'~54 kWh/kg H₂', bg:'#0d5c35', tc:'#6fffd9', pos:[5, 6.5, 0] },
+  { text:'GREEN H₂ TANK', sub:'~444 tons/year', bg:'#044a30', tc:'#7fff7f', pos:[16, 5.5, 0] },
+  { text:'AGRO-INDUSTRY', sub:'Coffee · Copra (80–120°C)', bg:'#4a2c08', tc:'#ffe07a', pos:[-5, 5.5, -8] },
+  { text:'AQUACULTURE', sub:'Fish farming (30–50°C)', bg:'#0a3a55', tc:'#88ddff', pos:[5, 4.5, -8] },
+  { text:'Mineral Co-products', sub:'Lithium + Silica (Brine)', bg:'#2a0f4a', tc:'#d4aaff', pos:[-14, 5.5, -8] },
 ];
-
+  
 labels3d.forEach(l => {
   const sprite = makeLabel(l.text, l.sub, l.bg, l.tc);
   sprite.position.set(...l.pos);
@@ -858,17 +857,17 @@ const mouse = new THREE.Vector2();
 const tooltip = document.getElementById('tooltip');
 
 const hoverData = new Map([
-  [reservoir, {title:'Reservoir Vulkanik', info:'Suhu 150–250°C · Kedalaman 1.500–3.000 m · Cadangan energi termal'}],
-  [borePipe,  {title:'Sumur Produksi', info:'Pompa mengalirkan fluida panas ke permukaan · Kapasitas ~90%'}],
-  [ppBody,    {title:'Pembangkit Listrik', info:'Binary/Flash Cycle · Output baseload stabil 24/7 · 10 MW'}],
-  [aweBody,   {title:'Elektroliser AWE', info:'2H₂O → 2H₂ + O₂ · 54 kWh/kg H₂ · CAPEX ~USD 500/kW'}],
-  [tank1,     {title:'Tangki H₂ Hijau', info:'~444 ton/tahun · USD 1,8–3,1 juta/tahun · Ekspor JP/KR/EU'}],
-  [tank2,     {title:'Tangki H₂ Hijau #2', info:'Penyimpanan bertekanan tinggi · Standar ISO 15869'}],
-  [agroMain,  {title:'Agro-Industri', info:'Pengeringan kopi, kopra, ikan · Panas sisa 80–120°C'}],
-  [pond1,     {title:'Kolam Akuakultur', info:'Budidaya ikan air hangat · Panas sisa 30–50°C'}],
-  [mineralBox,{title:'Ekstraksi Mineral', info:'Litium + Silika dari brine · Aliran pendapatan ke-4'}],
+  [reservoir, {title:'Volcanic Reservoir', info:'Temperature 150–250°C · Depth 1,500–3,000 m · Thermal energy reserves'}],
+  [borePipe,  {title:'Production Well', info:'Pumps transport hot fluid to the surface · ~90% capacity'}],
+  [ppBody,    {title:'Power Plant', info:'Binary/Flash Cycle · Stable baseload output 24/7 · 10 MW'}],
+  [aweBody,   {title:'AWE Electrolyzer', info:'2H₂O → 2H₂ + O₂ · 54 kWh/kg H₂ · CAPEX ~USD 500/kW'}],
+  [tank1,     {title:'Green H₂ Tank', info:'~444 tons/year · USD 1.8–3.1 million/year · Export to JP/KR/EU'}],
+  [tank2,     {title:'Green H₂ Tank #2', info:'High-pressure storage · ISO 15869 standard'}],
+  [agroMain,  {title:'Agro-Industry', info:'Coffee, copra, and fish drying · Waste heat 80–120°C'}],
+  [pond1,     {title:'Aquaculture Pond', info:'Warm-water fish farming · Waste heat 30–50°C'}],
+  [mineralBox,{title:'Mineral Extraction', info:'Lithium + Silica from brine · 4th revenue stream'}],
 ]);
-
+  
 window.addEventListener('mousemove', e => {
   mouse.x = (e.clientX / window.innerWidth)*2-1;
   mouse.y = -((e.clientY / window.innerHeight)*2-1);
